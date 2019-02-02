@@ -1,0 +1,23 @@
+############################################
+# lora_transceiver configuration file.
+# This file should be copied to:
+# /etc/lora/lora.conf
+############################################
+
+frequency=868100000
+# sf: SF7, SF8, SF9, SF10, SF11 or SF12.
+sf=SF7
+# bw: 
+bw=BW125
+# coding_rate:
+coding_rate=CR4_5
+# crc: enabled or disabled.
+crc=enabled
+# Enable lora protocol debugging.
+# debug: enabled or disabled.
+debug=disabled
+# verbose: 0, 1 or 2
+# 0 for silent.
+# 1 logs the number of bytes send or received.
+# 2 hexdumps the received or send messages.
+verbose = 0
