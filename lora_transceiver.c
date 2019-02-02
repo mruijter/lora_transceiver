@@ -646,7 +646,7 @@ int main (int argc, char *argv[]) {
     wfd = open_create_fifo(LORASEND_FIFO, O_RDWR | O_NONBLOCK);
 
     memset(fds, 0 , sizeof(fds)); 
-    fds[0].fd = rfd;
+    fds[0].fd = wfd;
     fds[0].events = POLLIN;
 
     // SPI bus speed. The lowest speed is sufficient.

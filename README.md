@@ -44,7 +44,6 @@ Feb 02 21:13:42 lorabase systemd[1]: Started Starts the lora transceiver..
 
 ```
 
-
 ## Testing the daemon
 
 Repeat the installation process on another node. Once the daemon is running on the second node test if everything works.
@@ -72,7 +71,7 @@ root@loraclient01:/opt# hexdump -C /dev/shm/receive_fifo
 
 The default configuration file that has been installed is : `/etc/lora/lora.conf`
 
-This file can be used to change the frequency, coding rate and all other LoRa parameters. After changing the configuration file do not forget to restart lora: `systemctl restart lora.`
+This file can be used to change the frequency, coding rate and all other LoRa parameters. After changing the configuration file do not forget to restart lora: `systemctl restart lora.` Should the GPS or LoRa transceiver not work than inspect boot/config.txt and compare it with boot/config.txt in this repository.
 
 Enjoy,
 
