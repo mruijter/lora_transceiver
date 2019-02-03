@@ -536,6 +536,7 @@ void load_config() {
     char *conf_debug = NULL;
     char *conf_verbose = NULL;
     char *conf_frequency = NULL;
+    char *conf_coding_rate = NULL;
     /* Read the configuration file and push the variables into the
        environment.
      */
@@ -546,6 +547,7 @@ void load_config() {
     conf_debug = read_val((char *)"debug"); 
     conf_verbose = read_val((char *)"verbose");
     conf_frequency = read_val((char *)"frequency");
+    conf_coding_rate = read_val((char *)"coding_rate");
     if (conf_verbose != NULL) {
         verbose = atoi(conf_verbose);
         if (verbose > 0)
@@ -611,6 +613,21 @@ void load_config() {
         } else {
             printf("CRC checks: disabled\n");
             crc = 0x00;
+        }
+    }
+    if (conf_coding_rate != NULL) {
+        if (strncasecmp(conf_coding_rate, "CR4_5", strlen("CR4_5")) == 0) {
+            printf("Selected coding rate: CR4_5\n");
+            cr = SX1276_MC1_CR_4_5;
+        } else if (strncasecmp(conf_coding_rate, "CR4_6", strlen("CR4_6")) == 0) {
+            printf("Selected coding rate: CR4_6\n");
+            cr = SX1276_MC1_CR_4_6;
+        } else if (strncasecmp(conf_coding_rate, "CR4_7", strlen("CR4_7")) == 0) {
+            printf("Selected coding rate: CR4_7\n");
+            cr = SX1276_MC1_CR_4_7;
+        } else if (strncasecmp(conf_coding_rate, "CR4_8", strlen("CR4_8")) == 0) {
+            printf("Selected coding rate: CR4_8\n");
+            cr = SX1276_MC1_CR_4_8;
         }
     }
     if (conf_debug != NULL) {

@@ -5,12 +5,16 @@
 ############################################
 
 frequency=868100000
-# sf: SF7, SF8, SF9, SF10, SF11 or SF12.
+# Valid spreading factors:
+# SF7, SF8, SF9, SF10, SF11 or SF12.
 sf=SF7
-# bw: 
+# Options for bandwidth:
+# BW_7_81, BW_10_41, BW_15_62, BW_20_83,
+# BW_31_25, BW_41_66, BW_62_5, BW_125, BW_250, BW_500
 bw=BW125
-# coding_rate:
-coding_rate=CR4_5
+# Available coding rates:
+# CR4_5, CR4_6, CR4_7, CR4_8
+coding_rate=CR4_8
 # crc: enabled or disabled.
 crc=enabled
 # Enable lora protocol debugging.
