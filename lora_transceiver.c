@@ -76,6 +76,7 @@
 
 #define RegPaConfig                 0x09 // common
 #define RegPaRamp                   0x0A // common
+#define RegOcp                      0x0B
 #define RegPaDac                    0x5A // common
 
 #define SX72_MC2_FSK                0x00
@@ -197,6 +198,7 @@ uint8_t cr = SX1276_MC1_CR_4_5;
 uint8_t crc = 0x04;
 bool lora_debug = 0;
 int verbose = 2;
+int power = 17;
 
 // Set center frequency
 static uint32_t freq = 868100000; // in Mhz! (868.1)
@@ -421,17 +423,25 @@ int receivepacket() {
 }
 
 static void configPower (int8_t pw) {
+    int max_power = pw;
     if (sx1272 == false) {
-        // printf("Power boost %i\n", pw);
+        printf("Power boost %i dbm\n", pw);
         // no boost used for now
         if(pw >= 17) {
             pw = 15;
         } else if(pw < 2) {
             pw = 2;
         }
-        // check board type for BOOST pin
-        writeReg(RegPaConfig, (uint8_t)(0x80|(pw&0xf)));
-        writeReg(RegPaDac, readReg(RegPaDac)|0x4);
+        if(max_power == 20) {
+            /* Max current 240mA */
+            writeReg(RegOcp, (uint8_t)0x3f);
+            writeReg(RegPaConfig, (uint8_t)(0xf0|(pw&0xf)));
+            writeReg(RegPaDac, readReg(RegPaDac)|0x7);
+        } else {
+            // check board type for BOOST pin
+            writeReg(RegPaConfig, (uint8_t)(0x80|(pw&0xf)));
+            writeReg(RegPaDac, readReg(RegPaDac)|0x4);
+        }
     } else {
         printf("Power boost\n");
         // set PA config (2-17 dBm using PA_BOOST)
@@ -531,6 +541,7 @@ void get_modem_config() {
 
 void load_config() {
     char *conf_bw = NULL;
+    char *conf_power = NULL;
     char *conf_sf = NULL;
     char *conf_crc = NULL;
     char *conf_debug = NULL;
@@ -542,9 +553,10 @@ void load_config() {
      */
     r_env_cfg((char *)CONFIG_FILE);
     conf_bw = read_val((char *)"bw"); 
-    conf_sf = read_val((char *)"sf"); 
-    conf_crc = read_val((char *)"crc"); 
-    conf_debug = read_val((char *)"debug"); 
+    conf_power = read_val((char *)"power");
+    conf_sf = read_val((char *)"sf");
+    conf_crc = read_val((char *)"crc");
+    conf_debug = read_val((char *)"debug");
     conf_verbose = read_val((char *)"verbose");
     conf_frequency = read_val((char *)"frequency");
     conf_coding_rate = read_val((char *)"coding_rate");
@@ -552,6 +564,15 @@ void load_config() {
         verbose = atoi(conf_verbose);
         if (verbose > 0)
             printf("Verbose level: %i\n", verbose);
+    }
+    if (conf_power != NULL) {
+        power = atoi(conf_power);
+        if (power != 20) {
+            if (power < 2 || power > 17) {
+                printf("Ignoring invalid power setting %i\n", power);
+                power = 17;
+            }
+        }
     }
     if (conf_frequency != NULL)
         freq = atoi(conf_frequency);
@@ -677,7 +698,7 @@ int main (int argc, char *argv[]) {
     while(1)  {
         opmode(OPMODE_STANDBY);
         writeReg(RegPaRamp, (readReg(RegPaRamp) & 0xF0) | 0x08); // set PA ramp-up time 50 uSec
-        configPower(23);
+        configPower(power);
 
         while(1) {
             memset(&message, 0, sizeof(message));

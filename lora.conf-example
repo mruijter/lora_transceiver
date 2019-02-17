@@ -8,6 +8,9 @@ frequency=868100000
 # Valid spreading factors:
 # SF7, SF8, SF9, SF10, SF11 or SF12.
 sf=SF7
+# Valid power settings:
+# 2 .. 17 and 20.
+power = 14
 # Options for bandwidth:
 # BW7_81, BW10_41, BW15_62, BW20_83,
 # BW31_25, BW41_66, BW62_5, BW125, BW250, BW500
