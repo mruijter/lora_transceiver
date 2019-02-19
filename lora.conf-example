@@ -15,6 +15,12 @@ power = 14
 # BW7_81, BW10_41, BW15_62, BW20_83,
 # BW31_25, BW41_66, BW62_5, BW125, BW250, BW500
 bw=BW125
+# When using a fixed message blocksize.
+# Try to read blocksize bytes from the FIFO before sending.
+# Options for blocksize:
+# 1 .. 254
+# Defaults to 64.
+blocksize = 32
 # Available coding rates:
 # CR4_5, CR4_6, CR4_7, CR4_8
 coding_rate=CR4_8

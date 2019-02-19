@@ -199,6 +199,7 @@ uint8_t crc = 0x04;
 bool lora_debug = 0;
 int verbose = 2;
 int power = 17;
+int blocksize = 64;
 
 // Set center frequency
 static uint32_t freq = 868100000; // in Mhz! (868.1)
@@ -548,6 +549,7 @@ void load_config() {
     char *conf_verbose = NULL;
     char *conf_frequency = NULL;
     char *conf_coding_rate = NULL;
+    char *conf_blocksize = NULL;
     /* Read the configuration file and push the variables into the
        environment.
      */
@@ -560,11 +562,13 @@ void load_config() {
     conf_verbose = read_val((char *)"verbose");
     conf_frequency = read_val((char *)"frequency");
     conf_coding_rate = read_val((char *)"coding_rate");
+    conf_blocksize = read_val((char *)"blocksize");
     if (conf_verbose != NULL) {
         verbose = atoi(conf_verbose);
         if (verbose > 0)
             printf("Verbose level: %i\n", verbose);
     }
+
     if (conf_power != NULL) {
         power = atoi(conf_power);
         if (power != 20) {
@@ -576,6 +580,11 @@ void load_config() {
     }
     if (conf_frequency != NULL)
         freq = atoi(conf_frequency);
+    if (conf_blocksize != NULL) {
+        blocksize = atoi(conf_blocksize);
+        if (blocksize > (int)sizeof(message))
+            blocksize = sizeof(message - 1);
+    }
     if (conf_bw != NULL) {
         if (strncasecmp(conf_bw, "BW7_81", strlen("BW7_81")) == 0) {
             printf("Selected bandwidth: BW7_81\n"); 
@@ -703,7 +712,7 @@ int main (int argc, char *argv[]) {
         while(1) {
             memset(&message, 0, sizeof(message));
             buflen = 0;
-            while (buflen < (int)sizeof(message)) {
+            while (buflen < blocksize) {
                 retv = read(wfd, (void *)&message[buflen], 1);
                 if (retv > 0)
                     buflen += retv;
