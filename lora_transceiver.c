@@ -756,6 +756,8 @@ int main (int argc, char *argv[]) {
                 written = write(rfd, (byte *)message, buflen);
                 if (written != buflen)
                     printf("Short write %i < %i\n", written, buflen);
+            } else {
+                usleep(250);
             }
         } while (! poll(fds, 1, 0));
     }
