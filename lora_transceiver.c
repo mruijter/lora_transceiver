@@ -11,7 +11,7 @@
  * License: MIT
  *
  *******************************************************************************/
-
+#include <errno.h>
 #include <string>
 #include <stdio.h>
 #include <sys/types.h>
@@ -199,7 +199,7 @@ uint8_t crc = 0x04;
 bool lora_debug = 0;
 int verbose = 2;
 int power = 17;
-int blocksize = 64;
+int blocksize = 256;
 
 // Set center frequency
 static uint32_t freq = 868100000; // in Mhz! (868.1)
@@ -672,6 +672,22 @@ void load_config() {
         printf("Send / receive packets at:  SF%i on %.6lf Mhz.\n", sf,(double)freq/1000000);
 }
 
+int full_write(int fd, char *buf, int len) {
+    int total;
+    int thistime;
+
+    for (total = 0; total < len;) {
+        thistime = write(fd, buf + total, len - total);
+        if (thistime < 0) {
+            if (EINTR == errno || EAGAIN == errno)
+                continue;
+            return thistime;    /* always an error for writes */
+        }
+        total += thistime;
+    }
+    return total;
+}
+
 int main (int argc, char *argv[]) {
     int rfd = -1;
     int wfd = -1;
@@ -690,7 +706,7 @@ int main (int argc, char *argv[]) {
        receive fifo. Clients read from this fifo.
     */
     rfd = open_create_fifo(LORARECEIVE_FIFO, O_RDWR | O_NONBLOCK);
-    wfd = open_create_fifo(LORASEND_FIFO, O_RDWR | O_NONBLOCK);
+    wfd = open_create_fifo(LORASEND_FIFO, O_RDWR);
 
     memset(fds, 0 , sizeof(fds)); 
     fds[0].fd = wfd;
@@ -709,13 +725,15 @@ int main (int argc, char *argv[]) {
         writeReg(RegPaRamp, (readReg(RegPaRamp) & 0xF0) | 0x08); // set PA ramp-up time 50 uSec
         configPower(power);
 
-        while(1) {
+        while(poll(fds, 1, 0)) {
             memset(&message, 0, sizeof(message));
             buflen = 0;
             while (buflen < blocksize) {
                 retv = read(wfd, (void *)&message[buflen], 1);
                 if (retv > 0)
                     buflen += retv;
+                else if (EINTR == errno)
+                    continue;
                 else
                     break;
             }
@@ -730,8 +748,7 @@ int main (int argc, char *argv[]) {
                 while ((readReg(REG_IRQ_FLAGS) & IRQ_LORA_TXDONE_MASK) == 0){
                     delay(10);
                 }
-            } else
-                break;
+            }
         }
         // radio init
         opmode(OPMODE_STANDBY);
@@ -753,7 +770,7 @@ int main (int argc, char *argv[]) {
             }
             written = 0;
             if (buflen >= 0) {
-                written = write(rfd, (byte *)message, buflen);
+                written = full_write(rfd, &message[0], buflen);
                 if (written != buflen)
                     printf("Short write %i < %i\n", written, buflen);
             } else {
