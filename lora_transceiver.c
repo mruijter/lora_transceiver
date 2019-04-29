@@ -313,11 +313,6 @@ void SetupLoRa()
     }
 
     opmode(OPMODE_SLEEP);
-    /* Set the register enabled for Lora.
-       See page 108 of the Semtech manual.
-     */ 
-    writeReg(REG_OPMODE, OPMODE_LORA); // Set the register enabled for Lora.
-
     // set frequency
     uint64_t frf = ((uint64_t)freq << 19) / 32000000;
     writeReg(REG_FRF_MSB, (uint8_t)(frf>>16) );
